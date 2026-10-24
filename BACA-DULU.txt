@@ -1,0 +1,33 @@
+JAWAB OTOMATIS (ADMIN) - VERSI HOSTING
+======================================
+
+PERINGATAN: Web ini hanya untuk admin pembuat formulir.
+Dilarang disebarkan ke siapa pun. Gunakan sebaik-baiknya.
+
+Isi paket:
+  index.html                      halaman utama (satu-satunya file wajib)
+  netlify.toml                    pengaturan Netlify (opsional)
+  netlify/functions/form.js       pembaca formulir milik sendiri (opsional)
+
+Tidak ada server yang perlu dijalankan. Halaman bekerja di browser perangkat mana pun.
+
+A. GitHub Pages
+  1. Buat repository baru di github.com (boleh private jika akun Anda mendukung Pages untuk private repo).
+  2. Upload index.html (tarik dan lepas di halaman repository).
+  3. Settings > Pages > Source: Deploy from a branch > main > / (root) > Save.
+  4. Tunggu satu sampai dua menit, alamat situs muncul di halaman yang sama.
+
+B. Netlify
+  Cara cepat: buka app.netlify.com/drop lalu tarik folder ini.
+  Cara lengkap (dengan fungsi pembaca formulir): upload folder ini ke repository GitHub,
+  lalu di Netlify pilih Add new site > Import an existing project dan pilih repository itu.
+
+Soal Google Form dibaca dengan urutan:
+  1. fungsi Netlify milik situs sendiri (hanya di Netlify, paling stabil)
+  2. empat proxy publik secara bergantian (berlaku di GitHub Pages dan Netlify)
+  3. kalau semuanya gagal: tempel soal manual di panel
+
+Catatan:
+  - API key Groq diketik di halaman dan disimpan di browser pengguna. Jangan menulis key di dalam file.
+  - Daftar model diambil langsung dari akun Groq Anda setelah key diisi.
+  - Siapa pun yang tahu alamat situs bisa membuka halamannya. Jangan bagikan alamatnya.
