@@ -1,601 +1,516 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
 <title>Jawab Otomatis</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #f3f2fa; --surface: #ffffff; --surface-2: #ebe9f7; --fg: #1d1b2e; --muted: #5f5c78;
-  --line: #dcd9ee; --accent: #5b3fd1; --accent-fg: #ffffff;
-  --ok: #17753f; --ok-bg: #e0f3e8; --bad: #b3261e; --bad-bg: #fbe5e3; --warn: #8a5a00; --warn-bg: #fff1d6;
-  --alert: #b3261e; --alert-fg: #ffffff; --shadow: rgba(40, 20, 120, .32);
-  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
-  --font-body: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #14122a; --surface: #1e1b3a; --surface-2: #2a2650; --fg: #ecebf7; --muted: #a6a3c4;
-    --line: #38336a; --accent: #9d86ff; --accent-fg: #14122a;
-    --ok: #6fdc9b; --ok-bg: #173a2a; --bad: #ff9a92; --bad-bg: #4a1f24; --warn: #ffd27a; --warn-bg: #3e3114;
-    --alert: #ff8a80; --alert-fg: #2b0805; --shadow: rgba(0, 0, 0, .55); color-scheme: dark;
-  }
-}
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.55; padding: 28px 16px 72px; }
-.wrap { max-width: 880px; margin: 0 auto; display: grid; gap: 18px; }
-header { display: grid; gap: 6px; }
-.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-h1 { font-family: var(--font-display); font-size: clamp(30px, 6vw, 42px); line-height: 1.08; margin: 0; text-wrap: balance; }
-.sub { margin: 0; color: var(--muted); max-width: 60ch; }
-button, input, textarea, select { font: inherit; color: inherit; }
-:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-[hidden] { display: none !important; }
-
-.alert { background: var(--alert); color: var(--alert-fg); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; }
-.alert strong { font-family: var(--font-display); font-size: 17px; letter-spacing: .02em; text-transform: uppercase; }
-.alert p { margin: 0; font-weight: 500; }
-
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 16px; min-width: 0; }
-.switch { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 17px; cursor: pointer; }
-.switch input { appearance: none; -webkit-appearance: none; flex: none; width: 48px; height: 28px; border-radius: 999px; background: var(--line); position: relative; cursor: pointer; margin: 0; transition: background .15s; }
-.switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
-.switch input:checked { background: var(--accent); }
-.switch input:checked::after { transform: translateX(20px); }
-@media (prefers-reduced-motion: reduce) { .switch input, .switch input::after { transition: none; } }
-.switch small { display: block; font-weight: 400; font-size: 13px; color: var(--muted); }
-
-.field { display: grid; gap: 6px; min-width: 0; }
-label.l { font-weight: 600; font-size: 14px; }
-.hint { margin: 0; color: var(--muted); font-size: 13px; }
-input[type="text"], input[type="password"], input[type="url"], select, textarea {
-  width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px;
-}
-textarea { min-height: 100px; resize: vertical; }
-.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-@media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
-.go { background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 12px; padding: 14px 18px; font-weight: 600; font-size: 16px; cursor: pointer; width: 100%; }
-.go:disabled { opacity: .5; cursor: not-allowed; }
-.btn { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 14px; font-weight: 600; cursor: pointer; }
-.btn:disabled { opacity: .6; cursor: progress; }
-.status { padding: 11px 14px; border-radius: 10px; background: var(--surface-2); font-size: 14px; }
-.status.err { background: var(--bad-bg); color: var(--bad); }
-.status.good { background: var(--ok-bg); color: var(--ok); }
-.status.warn { background: var(--warn-bg); color: var(--warn); }
-
-.stage { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
-.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); }
-.toolbar strong { font-family: var(--font-display); font-size: 17px; overflow-wrap: anywhere; flex: 1 1 200px; min-width: 0; }
-iframe#frame { display: block; width: 100%; height: min(80vh, 920px); min-height: 520px; border: 0; background: #fff; }
-
-/* panel melayang */
-.bubble { position: fixed; right: 20px; bottom: 20px; z-index: 50; background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 999px; padding: 13px 20px; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px var(--shadow); }
-.fpanel { position: fixed; right: 20px; bottom: 20px; z-index: 60; width: 380px; max-width: calc(100vw - 24px); max-height: calc(100vh - 40px); overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 14px 44px var(--shadow); font-size: 14px; }
-.fhead { position: sticky; top: 0; display: flex; align-items: center; gap: 8px; padding: 11px 14px; background: var(--accent); color: var(--accent-fg); cursor: move; user-select: none; touch-action: none; }
-.fhead b { font-family: var(--font-display); font-size: 16px; flex: 1; }
-.fhead button { background: rgba(255,255,255,.18); color: inherit; border: 0; border-radius: 8px; padding: 5px 10px; font-weight: 600; cursor: pointer; font-size: 13px; }
-.fhead button.x { font-size: 18px; line-height: 1; padding: 3px 9px; }
-.fbody { padding: 14px; display: grid; gap: 12px; }
-.mini-alert { background: var(--alert); color: var(--alert-fg); border-radius: 9px; padding: 8px 11px; font-weight: 500; font-size: 13px; }
-.chk { display: flex; align-items: center; gap: 8px; font-weight: 500; }
-.meta { color: var(--muted); font-size: 13px; }
-.res { display: grid; gap: 10px; }
-.r { border-top: 1px solid var(--line); padding-top: 9px; display: grid; gap: 4px; min-width: 0; }
-.r b { font-weight: 600; overflow-wrap: anywhere; }
-.a { background: var(--ok-bg); color: var(--ok); border-radius: 7px; padding: 6px 9px; font-weight: 600; overflow-wrap: anywhere; }
-.w { background: var(--warn-bg); color: var(--warn); border-radius: 7px; padding: 6px 9px; }
-.why { color: var(--muted); font-size: 13px; }
-details { border: 1px dashed var(--line); border-radius: 10px; padding: 8px 10px; }
-summary { cursor: pointer; font-weight: 600; font-size: 13px; }
-details[open] summary { margin-bottom: 8px; }
+:root{--bg:#f4f5f1;--card:#fff;--ink:#1c2420;--mute:#5d6862;--line:#d9ddd6;--ac:#0f6b5c;--acink:#fff;--ok:#16794a;--okbg:#e4f4ea;--bad:#7a1710;--badbg:#fde8e6;--badln:#c62d22;--wn:#6b5000;--wnbg:#fff4cc;--wnln:#d4a800;--info:#1b4f8f;--infobg:#e6eefa;--sh:0 10px 30px rgba(0,0,0,.2)}
+@media (prefers-color-scheme:dark){:root{--bg:#121614;--card:#1b211e;--ink:#e6ebe7;--mute:#9aa7a0;--line:#313a35;--ac:#4cc9ae;--acink:#08211b;--ok:#6fdca2;--okbg:#17301f;--bad:#ffb4ab;--badbg:#3a1512;--badln:#e0584c;--wn:#ffe08a;--wnbg:#3a3010;--wnln:#b08c00;--info:#a9c8f5;--infobg:#162840;--sh:0 10px 30px rgba(0,0,0,.6)}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:16px 14px 80px}
+h1{font-size:1.5rem;margin:.2rem 0 .8rem}
+[hidden]{display:none!important}
+.box{border:2px solid;border-radius:10px;padding:10px 12px;font-size:.95rem}
+.box.bad{background:var(--badbg);border-color:var(--badln);color:var(--bad);font-weight:600}
+.box.info{background:var(--infobg);border-color:transparent;color:var(--info)}
+.box.ok{background:var(--okbg);border-color:transparent;color:var(--ok)}
+.box.warn{background:var(--wnbg);border-color:var(--wnln);color:var(--wn)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:14px}
+label.f{display:block;font-weight:600;margin:12px 0 4px;font-size:.95rem}
+input[type=text],input[type=url],input[type=password],select{width:100%;font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+input:focus-visible,select:focus-visible,button:focus-visible,.sw input:focus-visible+.trk{outline:3px solid var(--ac);outline-offset:2px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 14px}
+button.pri{background:var(--ac);color:var(--acink);border-color:var(--ac);font-weight:700}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.big{width:100%;padding:13px;font-size:1.05rem}
+.sw{display:flex;align-items:center;gap:12px;cursor:pointer;font-weight:600}
+.sw input{position:absolute;opacity:0;width:1px;height:1px}
+.trk{width:46px;height:26px;border-radius:13px;background:var(--line);position:relative;flex:none;transition:background .15s}
+.trk::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .15s}
+.sw input:checked+.trk{background:var(--ac)}
+.sw input:checked+.trk::after{transform:translateX(20px)}
+.msg{margin-top:10px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:14px}
+.bar b{overflow-wrap:anywhere}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+a.btn{display:inline-block;text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:9px 14px;color:var(--ink);background:var(--card)}
+iframe{display:block;width:100%;height:80vh;min-height:520px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-top:10px}
+#panel{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:min(380px,calc(100vw - 24px));max-height:min(82vh,680px);display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);z-index:50}
+#ptitle{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);cursor:grab;touch-action:none;user-select:none;font-weight:700}
+#ptitle.drag{cursor:grabbing}
+#ptitle button{padding:4px 10px}
+#pbody{overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+#pbody .box{font-size:.85rem;padding:7px 10px}
+.chk{display:flex;gap:8px;align-items:center;font-size:.95rem}
+.chk input{width:18px;height:18px;accent-color:var(--ac)}
+#res{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+#res li{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:.92rem}
+#res .q{font-weight:600;overflow-wrap:anywhere}
+#res .a{margin-top:4px;background:var(--okbg);color:var(--ok);border-radius:6px;padding:4px 8px;font-weight:700;overflow-wrap:anywhere}
+#res .r{margin-top:4px;color:var(--mute);font-size:.85rem;overflow-wrap:anywhere}
+#res .w{margin-top:4px;background:var(--wnbg);color:var(--wn);border-radius:6px;padding:4px 8px;overflow-wrap:anywhere}
+#bubble{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;border-radius:999px;background:var(--ac);color:var(--acink);border:0;font-weight:700;padding:12px 18px;box-shadow:var(--sh)}
+.mut{color:var(--mute);font-size:.85rem}
+@media (prefers-reduced-motion:reduce){.trk,.trk::after{transition:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <span class="eyebrow">Groq AI · Google Form</span>
-    <h1>Jawab Otomatis</h1>
-    <p class="sub">Aktifkan panel, hubungkan link Google Form, lalu AI menjawab semua soal dari panel yang melayang di atas formulir. Berjalan di browser mana pun, tanpa server.</p>
-  </header>
+  <h1>Jawab Otomatis</h1>
+  <div class="box bad" role="alert">Web ini hanya untuk admin penyedia soal. Dilarang menyebarkan web ini secara publik, termasuk membagikan link atau file-nya ke siapa pun. Gunakan sebaik-baiknya.</div>
 
-  <div class="alert" role="alert">
-    <strong>Peringatan</strong>
-    <p>Web ini hanya untuk admin pembuat formulir. Admin dilarang menyebarkannya ke siapa pun. Gunakan sebaik-baiknya.</p>
+  <div class="card">
+    <label class="sw"><input type="checkbox" id="toggle"><span class="trk" aria-hidden="true"></span><span>Aktifkan panel melayang</span></label>
   </div>
 
-  <section class="card" aria-label="Pengaturan panel">
-    <label class="switch">
-      <input type="checkbox" id="on" role="switch">
-      <span>Aktifkan panel melayang<small id="onlabel">Mati</small></span>
-    </label>
+  <div id="area" hidden>
+    <div class="card" id="setup">
+      <label class="f" for="link">Link Google Form (link responden)</label>
+      <input type="url" id="link" placeholder="https://docs.google.com/forms/d/e/.../viewform" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <label class="f" for="key">API key Groq</label>
+      <input type="password" id="key" placeholder="gsk_..." autocomplete="off">
+      <label class="f" for="model">Model AI</label>
+      <select id="model"></select>
+      <p class="mut">API key hanya disimpan di browser ini (localStorage) dan hanya dikirim ke Groq.</p>
+      <button class="pri" id="connect" disabled>Hubungkan</button>
+      <div class="msg box info" id="setupMsg" role="status" hidden></div>
+    </div>
 
-    <div id="setup" hidden style="display:grid;gap:14px">
-      <div class="field">
-        <label class="l" for="url">Link Google Form</label>
-        <input id="url" type="url" placeholder="https://docs.google.com/forms/d/e/.../viewform" autocomplete="off">
-        <p class="hint">Pakai link responden (Kirim, lalu ikon link) atau link forms.gle.</p>
-      </div>
-      <div class="row">
-        <div class="field">
-          <label class="l" for="key">API key Groq</label>
-          <input id="key" type="password" placeholder="gsk_..." autocomplete="off">
-          <p class="hint">Gratis di console.groq.com/keys. Key hanya disimpan di browser ini dan dikirim ke Groq.</p>
-        </div>
-        <div class="field">
-          <label class="l" for="model">Model AI</label>
-          <select id="model"><option value="openai/gpt-oss-120b">openai/gpt-oss-120b</option></select>
+    <div id="viewer" hidden>
+      <div class="bar">
+        <b id="ftitle">Formulir</b>
+        <div class="acts">
+          <button id="showPanel" hidden>Tampilkan panel</button>
+          <a class="btn" id="newTab" target="_blank" rel="noopener noreferrer" href="#">Buka di tab baru</a>
+          <button id="change">Ganti formulir</button>
         </div>
       </div>
-      <button class="go" id="connect" type="button" disabled>Hubungkan</button>
-      <div class="status" id="status" role="status" aria-live="polite" hidden></div>
+      <iframe id="frame" title="Formulir Google" referrerpolicy="no-referrer"></iframe>
     </div>
-  </section>
-
-  <section class="stage" id="stage" hidden aria-label="Formulir">
-    <div class="toolbar">
-      <strong id="formname">Formulir</strong>
-      <button class="btn" id="showpanel" type="button" hidden>Tampilkan panel</button>
-      <button class="btn" id="newtab" type="button">Buka di tab baru</button>
-    </div>
-    <iframe id="frame" title="Google Form" src="about:blank"></iframe>
-  </section>
-</div>
-
-<button class="bubble" id="bubble" type="button" hidden>Jawab Otomatis</button>
-
-<div class="fpanel" id="panel" role="dialog" aria-label="Jawab Otomatis" hidden>
-  <div class="fhead" id="drag">
-    <b>Jawab Otomatis</b>
-    <button id="hide" type="button" title="Sembunyikan panel sepenuhnya">Sembunyikan</button>
-    <button class="x" id="close" type="button" aria-label="Tutup panel">&times;</button>
-  </div>
-  <div class="fbody">
-    <div class="mini-alert">Hanya untuk admin pembuat formulir. Dilarang disebarkan.</div>
-    <div class="meta" id="count"></div>
-    <label class="chk"><input type="checkbox" id="fill" checked> Isi jawaban ke formulir</label>
-    <label class="chk"><input type="checkbox" id="careful" checked> Mode teliti (analisis langkah demi langkah)</label>
-    <button class="go" id="go" type="button">Jawab semua pertanyaan otomatis</button>
-    <div class="status" id="pstatus" role="status" aria-live="polite" hidden></div>
-    <div class="res" id="res"></div>
-    <button class="btn" id="copy" type="button" hidden>Salin jawaban</button>
-    <details>
-      <summary>Soal tidak terbaca? Tempel soal manual</summary>
-      <textarea id="text" placeholder="1. Di mana kota Mojokerto?&#10;a. Jawa Timur&#10;b. Jawa Barat"></textarea>
-      <p class="hint">Kalau terisi, AI menjawab dari teks ini. Formulir tidak terisi otomatis.</p>
-    </details>
   </div>
 </div>
+
+<button id="bubble" hidden aria-label="Buka panel Jawab Otomatis">Jawab Otomatis</button>
+
+<section id="panel" hidden aria-label="Panel Jawab Otomatis">
+  <div id="ptitle"><span>Jawab Otomatis</span><button id="pclose" aria-label="Tutup panel">&times;</button></div>
+  <div id="pbody">
+    <div class="box bad">Khusus admin penyedia soal. Dilarang menyebarkan web ini secara publik.</div>
+    <div id="count" class="mut">Belum ada soal terbaca.</div>
+    <label class="chk"><input type="checkbox" id="optFill" checked> Isi (pilih) jawaban ke formulir</label>
+    <label class="chk"><input type="checkbox" id="optAuto" checked> Jawab otomatis setelah terhubung</label>
+    <label class="chk"><input type="checkbox" id="optCareful"> Mode teliti</label>
+    <button class="pri big" id="go">Jawab semua pertanyaan otomatis</button>
+    <div class="box info" id="status" role="status" hidden></div>
+    <ol id="res"></ol>
+    <div class="acts">
+      <button id="copy" disabled>Salin jawaban</button>
+      <button id="reread">Baca ulang soal</button>
+      <button id="hide">Sembunyikan</button>
+    </div>
+  </div>
+</section>
 
 <script>
-var $ = function (id) { return document.getElementById(id); };
-var S = { form: null, id: null, items: [], panel: 'none' };
-
-function store(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
-function load(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
-
-/* ---------------- status ---------------- */
-function setStatus(id, msg, kind) {
-  var s = $(id);
-  s.hidden = !msg;
-  s.textContent = msg || '';
-  s.className = 'status' + (kind ? ' ' + kind : '');
+"use strict";
+//#PURE-START
+const SKIP_MODEL=/whisper|guard|tts|playai|orpheus|embed/i;
+const PREFER=['openai/gpt-oss-120b','llama-3.3-70b-versatile','qwen/qwen3-32b'];
+const TYPE_NAME={0:'jawaban singkat',1:'paragraf',2:'pilihan ganda',3:'dropdown',4:'kotak centang',5:'skala linear',9:'tanggal (format YYYY-MM-DD)',10:'jam (format HH:MM, 24 jam)'};
+function parseLink(raw){
+  let u;try{u=new URL(String(raw||'').trim());}catch(e){return{ok:false};}
+  const h=u.hostname.toLowerCase();
+  const okHost=(h==='docs.google.com'&&/^\/forms(\/|$)/.test(u.pathname))||h==='forms.gle'||h==='forms.google.com';
+  if(!okHost)return{ok:false};
+  const m=u.pathname.match(/\/forms\/d\/e\/([\w-]+)/);
+  if(m)return{ok:true,id:m[1],url:u.href};
+  if(/\/forms\/d\/[\w-]+/.test(u.pathname))return{ok:false,edit:true};
+  return{ok:true,id:null,url:u.href};
 }
-
-/* ---------------- membaca formulir (tanpa server) ---------------- */
-var TYPES = { 0: 'jawaban singkat', 1: 'paragraf', 2: 'pilihan ganda', 3: 'dropdown', 4: 'kotak centang', 5: 'skala linear' };
-
-function parseFormClient(html, url) {
-  var m = html.match(/FB_PUBLIC_LOAD_DATA_\s*=\s*([\s\S]*?);\s*<\/script>/);
-  if (!m) throw new Error('Soal tidak ditemukan. Pakai link responden (bukan link edit) dan pastikan formulir tidak meminta login.');
-  var data;
-  try { data = JSON.parse(m[1]); } catch (e) { throw new Error('Data formulir tidak bisa dibaca.'); }
-  var meta = (data && data[1]) || [];
-  var idm = html.match(/\/forms\/d\/e\/([\w-]+)\/formResponse/) || String(url).match(/\/forms\/d\/e\/([\w-]+)/);
-  var questions = [];
-  (meta[1] || []).forEach(function (it) {
-    if (!Array.isArray(it) || !Array.isArray(it[4]) || !it[4][0]) return;
-    var q = it[4][0];
-    var options = (q[1] || []).filter(function (o) { return Array.isArray(o) && o[0] !== undefined && o[0] !== ''; })
-      .map(function (o) { return String(o[0]); });
-    questions.push({
-      title: String(it[1] || '').trim(), description: String(it[2] || '').trim(),
-      type: TYPES[it[3]] || 'tipe lain', typeCode: it[3], entry: String(q[0]), required: q[2] === 1,
-      options: options, supported: Object.prototype.hasOwnProperty.call(TYPES, it[3]) && it[4].length === 1
+function findFormId(html){const m=String(html).match(/\/forms\/d\/e\/([\w-]+)\/formResponse/);return m?m[1]:null;}
+function parseFormData(html){
+  const m=String(html).match(/FB_PUBLIC_LOAD_DATA_\s*=\s*([\s\S]*?);\s*<\/script>/);
+  if(!m)throw new Error('Data soal tidak ditemukan di halaman formulir.');
+  let d;try{d=JSON.parse(m[1]);}catch(e){throw new Error('Data soal formulir tidak bisa dibaca.');}
+  const info=(d&&d[1])||[];
+  const items=Array.isArray(info[1])?info[1]:[];
+  const title=String(info[8]||(d&&d[3])||'Formulir');
+  const qs=[];
+  items.forEach(it=>{
+    if(!it||!Array.isArray(it[4])||!it[4].length)return;
+    const t=it[3];
+    it[4].forEach(f=>{
+      if(!Array.isArray(f))return;
+      let ttl=String(it[1]||'(tanpa judul)');
+      if(t===7&&Array.isArray(f[3])&&f[3][0])ttl+=' [baris: '+f[3][0]+']';
+      const q={title:ttl,desc:it[2]?String(it[2]):'',type:t===7?(f[11]===1?4:2):t,entry:f[0],options:[],required:f[2]===1,supported:false};
+      if(Array.isArray(f[1]))q.options=f[1].map(o=>String(Array.isArray(o)&&o[0]!=null?o[0]:'')).filter(Boolean);
+      q.supported=((t>=0&&t<=5)||t===7||t===9||t===10)&&q.entry!=null;
+      qs.push(q);
     });
   });
-  return {
-    title: String(meta[8] || data[3] || 'Formulir'),
-    action: idm ? 'https://docs.google.com/forms/d/e/' + idm[1] + '/formResponse' : null,
-    questions: questions
-  };
+  return{title,qs};
 }
-
-function fetchTimeout(url, ms, opts) {
-  var c = new AbortController();
-  var t = setTimeout(function () { c.abort(); }, ms);
-  return fetch(url, Object.assign({ signal: c.signal }, opts || {})).finally(function () { clearTimeout(t); });
+function norm(s){return String(s==null?'':s).toLowerCase().replace(/\s+/g,' ').trim();}
+function matchOne(options,a){
+  const n=norm(a);if(!n)return null;
+  let r=options.find(o=>norm(o)===n);if(r)return r;
+  r=options.find(o=>{const x=norm(o);return x&&Math.min(x.length,n.length)>=3&&(x.includes(n)||n.includes(x));});
+  return r||null;
 }
-
-var PROXIES = [
-  function (u) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); },
-  function (u) { return 'https://corsproxy.io/?url=' + encodeURIComponent(u); },
-  function (u) { return 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(u); },
-  function (u) { return 'https://thingproxy.freeboard.io/fetch/' + u; }
-];
-
-// Urutan: (1) fungsi Netlify milik situs ini, (2) beberapa proxy publik bergantian.
-async function getForm(url) {
-  var lastErr = '';
-  try {
-    var r0 = await fetchTimeout('/.netlify/functions/form?url=' + encodeURIComponent(url), 15000);
-    if (r0.ok) {
-      var t0 = await r0.text();
-      if (t0.indexOf('FB_PUBLIC_LOAD_DATA_') >= 0) return parseFormClient(t0, r0.headers.get('x-final-url') || url);
-    }
-  } catch (e) { /* bukan di Netlify, lanjut ke proxy */ }
-
-  for (var i = 0; i < PROXIES.length; i++) {
-    try {
-      var r = await fetchTimeout(PROXIES[i](url), 12000);
-      if (!r.ok) { lastErr = 'kode ' + r.status; continue; }
-      var t = await r.text();
-      if (t.indexOf('FB_PUBLIC_LOAD_DATA_') < 0) { lastErr = 'soal tidak ditemukan di halaman'; continue; }
-      return parseFormClient(t, url);
-    } catch (e) { lastErr = e.name === 'AbortError' ? 'waktu habis' : 'tidak terhubung'; }
+function resolveAnswer(q,jawab){
+  if(jawab==null)return null;
+  if(q.type===9){const m=String(jawab).match(/(\d{4})-(\d{1,2})-(\d{1,2})/);return m?m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0'):null;}
+  if(q.type===10){const m=String(jawab).match(/(\d{1,2}):(\d{2})/);return m?m[1].padStart(2,'0')+':'+m[2]:null;}
+  if(q.type===4){
+    const list=Array.isArray(jawab)?jawab:String(jawab).split(/\n|;/);
+    const out=[];
+    for(const a of list){if(!norm(a))continue;const r=matchOne(q.options,a);if(r==null)return null;if(!out.includes(r))out.push(r);}
+    return out.length?out:null;
   }
-  throw new Error('Soal tidak bisa dibaca (' + lastErr + '). Pastikan memakai link responden dan formulir tidak meminta login. ' +
-    'Anda tetap bisa menempel soal manual di panel.');
-}
-
-/* ---------------- Groq ---------------- */
-var FALLBACK_MODELS = ['openai/gpt-oss-120b', 'llama-3.3-70b-versatile', 'qwen/qwen3-32b', 'llama-3.1-8b-instant'];
-var PREFERRED = ['openai/gpt-oss-120b', 'llama-3.3-70b-versatile', 'qwen/qwen3-32b', 'openai/gpt-oss-20b', 'llama-3.1-8b-instant'];
-var CHUNK = 8;
-
-function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
-
-function stripThink(t) {
-  return String(t || '').replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
-}
-function parseJsonLoose(text) {
-  var s = stripThink(text);
-  try { return JSON.parse(s); } catch (e) {}
-  var a = s.indexOf('{'), b = s.lastIndexOf('}');
-  if (a >= 0 && b > a) { try { return JSON.parse(s.slice(a, b + 1)); } catch (e) {} }
-  throw new Error('Jawaban AI bukan JSON yang valid. Coba lagi atau ganti model.');
-}
-
-async function loadModels(key) {
-  var sel = $('model');
-  var current = sel.value || load('model');
-  var ids = FALLBACK_MODELS.slice();
-  if (key) {
-    try {
-      var r = await fetchTimeout('https://api.groq.com/openai/v1/models', 10000, { headers: { 'Authorization': 'Bearer ' + key } });
-      if (r.ok) {
-        var j = await r.json();
-        var live = (j.data || []).map(function (m) { return m.id; })
-          .filter(function (id) { return !/whisper|guard|tts|playai|orpheus|embed|safeguard/i.test(id); });
-        if (live.length) ids = live;
-      }
-    } catch (e) {}
+  if(q.type===2||q.type===3||q.type===5){
+    const a=Array.isArray(jawab)?jawab[0]:jawab;
+    return matchOne(q.options,a);
   }
-  ids.sort(function (a, b) {
-    var ia = PREFERRED.indexOf(a), ib = PREFERRED.indexOf(b);
-    if (ia < 0) ia = 99; if (ib < 0) ib = 99;
-    return ia - ib || a.localeCompare(b);
+  const s=(Array.isArray(jawab)?jawab.join(', '):String(jawab)).trim();
+  return s||null;
+}
+function buildPrefill(id,qs,answers){
+  let u='https://docs.google.com/forms/d/e/'+id+'/viewform?embedded=true&usp=pp_url';
+  qs.forEach((q,i)=>{
+    const a=answers[i];
+    if(!a||a.value==null||q.entry==null)return;
+    if(q.type===9){const d=String(a.value).split('-');u+='&entry.'+q.entry+'_year='+Number(d[0])+'&entry.'+q.entry+'_month='+Number(d[1])+'&entry.'+q.entry+'_day='+Number(d[2]);return;}
+    if(q.type===10){const d=String(a.value).split(':');u+='&entry.'+q.entry+'_hour='+Number(d[0])+'&entry.'+q.entry+'_minute='+Number(d[1]);return;}
+    (Array.isArray(a.value)?a.value:[a.value]).forEach(v=>{u+='&entry.'+q.entry+'='+encodeURIComponent(v);});
   });
-  sel.innerHTML = '';
-  ids.forEach(function (id) { var o = document.createElement('option'); o.value = id; o.textContent = id; sel.appendChild(o); });
-  sel.value = ids.indexOf(current) >= 0 ? current : ids[0];
+  return u;
+}
+function extractJson(t){
+  t=String(t||'').replace(/<think>[\s\S]*?<\/think>/gi,'').replace(/```(?:json)?/gi,'').trim();
+  try{return JSON.parse(t);}catch(e){}
+  const a=t.indexOf('{'),b=t.lastIndexOf('}');
+  if(a>=0&&b>a){try{return JSON.parse(t.slice(a,b+1));}catch(e){}}
+  throw new Error('Balasan AI bukan JSON yang valid.');
+}
+function sortModels(ids){
+  const rank=id=>{const i=PREFER.indexOf(id);return i<0?99:i;};
+  return ids.filter(id=>!SKIP_MODEL.test(id)).sort((a,b)=>rank(a)-rank(b)||a.localeCompare(b));
+}
+//#PURE-END
+
+const $=s=>document.querySelector(s);
+const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+const el={toggle:$('#toggle'),area:$('#area'),setup:$('#setup'),link:$('#link'),key:$('#key'),model:$('#model'),connect:$('#connect'),setupMsg:$('#setupMsg'),viewer:$('#viewer'),ftitle:$('#ftitle'),showPanel:$('#showPanel'),newTab:$('#newTab'),change:$('#change'),frame:$('#frame'),bubble:$('#bubble'),panel:$('#panel'),ptitle:$('#ptitle'),pclose:$('#pclose'),count:$('#count'),optFill:$('#optFill'),optCareful:$('#optCareful'),go:$('#go'),status:$('#status'),res:$('#res'),copy:$('#copy'),hide:$('#hide'),optAuto:$('#optAuto'),reread:$('#reread')};
+const S={id:null,url:'',title:'',qs:[],answers:[],connected:false,busy:false,panel:'open',lastReload:0};
+const API='https://api.groq.com/openai/v1';
+
+function setMsg(node,kind,text){
+  if(!text){node.hidden=true;return;}
+  node.className=(node===el.setupMsg?'msg ':'')+'box '+kind;
+  node.textContent=text;node.hidden=false;
 }
 
-async function askGroq(key, model, system, user) {
-  var base = { model: model, temperature: 0, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] };
-  var extras = { max_completion_tokens: 8000 };
-  if (/gpt-oss/i.test(model)) extras.reasoning_effort = 'high';
-  if (/qwen3/i.test(model)) extras.reasoning_format = 'hidden';
-  var variants = [
-    Object.assign({}, base, extras, { response_format: { type: 'json_object' } }),
-    Object.assign({}, base, { response_format: { type: 'json_object' } }),
-    base
-  ];
-  var lastMsg = '';
-  for (var v = 0; v < variants.length; v++) {
-    for (var attempt = 0; attempt < 3; attempt++) {
-      var r;
-      try {
-        r = await fetchTimeout('https://api.groq.com/openai/v1/chat/completions', 120000, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-          body: JSON.stringify(variants[v])
-        });
-      } catch (e) { throw new Error('Tidak bisa menghubungi Groq. Periksa koneksi internet.'); }
-      var j = await r.json().catch(function () { return {}; });
-      if (r.ok) {
-        var c = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
-        return parseJsonLoose(c);
-      }
-      lastMsg = (j.error && j.error.message) || ('kode ' + r.status);
-      if (r.status === 401) throw new Error('API key Groq tidak valid.');
-      if (r.status === 429) { await sleep(4000 * (attempt + 1)); continue; }
-      if (r.status === 400 || r.status === 422) break; // coba varian yang lebih sederhana
-      throw new Error('Groq gagal: ' + lastMsg);
-    }
+/* ---------- tampilan ---------- */
+function setPanel(s){S.panel=s;render();}
+function render(){
+  const on=el.toggle.checked;
+  el.area.hidden=!on;
+  const vis=on&&S.connected;
+  el.panel.hidden=!(vis&&S.panel==='open');
+  el.bubble.hidden=!(vis&&S.panel==='bubble');
+  el.showPanel.hidden=!(vis&&S.panel==='hidden');
+  el.setup.hidden=S.connected;
+  el.viewer.hidden=!S.connected;
+  if(!el.panel.hidden)clampPanel();
+}
+function renderResults(){
+  el.res.textContent='';
+  S.qs.forEach((q,i)=>{
+    const li=document.createElement('li');
+    const t=document.createElement('div');t.className='q';t.textContent=(i+1)+'. '+q.title;li.appendChild(t);
+    const a=S.answers[i];
+    const add=(cls,txt)=>{const d=document.createElement('div');d.className=cls;d.textContent=txt;li.appendChild(d);};
+    if(!q.supported){add('r','Tipe soal tidak didukung, isi sendiri.');}
+    else if(!a){add('r','Menunggu jawaban...');}
+    else if(a.warn){add('w','Jawaban AI tidak cocok dengan opsi. Periksa sendiri: '+a.raw);if(a.alasan)add('r',a.alasan);}
+    else{add('a',Array.isArray(a.value)?a.value.join(', '):a.value);if(a.alasan)add('r',a.alasan);}
+    el.res.appendChild(li);
+  });
+  el.copy.disabled=!S.answers.some(a=>a&&a.value!=null);
+}
+function updateCount(extra){
+  const n=S.qs.length,u=S.qs.filter(q=>!q.supported).length;
+  el.count.textContent=n?(n+' soal terbaca'+(u?(', '+u+' tidak didukung'):'')+'.'):'Belum ada soal terbaca.';
+  if(extra)setMsg(el.status,'warn',extra);
+}
+
+/* ---------- panel: geser, tutup ---------- */
+function clampPanel(){
+  if(!el.panel.style.left)return;
+  const r=el.panel.getBoundingClientRect();
+  const x=Math.min(Math.max(0,r.left),Math.max(0,innerWidth-r.width));
+  const y=Math.min(Math.max(0,r.top),Math.max(0,innerHeight-r.height));
+  el.panel.style.left=x+'px';el.panel.style.top=y+'px';
+}
+(function(){
+  let dx=0,dy=0,drag=false;
+  el.ptitle.addEventListener('pointerdown',e=>{
+    if(e.target.closest('button'))return;
+    const r=el.panel.getBoundingClientRect();
+    dx=e.clientX-r.left;dy=e.clientY-r.top;drag=true;
+    el.panel.style.left=r.left+'px';el.panel.style.top=r.top+'px';
+    el.panel.style.right='auto';el.panel.style.bottom='auto';
+    el.ptitle.classList.add('drag');el.ptitle.setPointerCapture(e.pointerId);
+  });
+  el.ptitle.addEventListener('pointermove',e=>{
+    if(!drag)return;
+    const r=el.panel.getBoundingClientRect();
+    el.panel.style.left=Math.min(Math.max(0,e.clientX-dx),Math.max(0,innerWidth-r.width))+'px';
+    el.panel.style.top=Math.min(Math.max(0,e.clientY-dy),Math.max(0,innerHeight-r.height))+'px';
+  });
+  const end=()=>{drag=false;el.ptitle.classList.remove('drag');};
+  el.ptitle.addEventListener('pointerup',end);
+  el.ptitle.addEventListener('pointercancel',end);
+})();
+addEventListener('resize',clampPanel);
+function collapse(){if(S.panel==='open')setPanel('bubble');}
+document.addEventListener('pointerdown',e=>{
+  if(S.panel==='open'&&!el.panel.contains(e.target)&&!el.bubble.contains(e.target))collapse();
+},true);
+addEventListener('keydown',e=>{if(e.key==='Escape')collapse();});
+addEventListener('blur',()=>{
+  setTimeout(()=>{
+    if(document.activeElement===el.frame&&Date.now()-S.lastReload>2000)collapse();
+  },0);
+});
+el.pclose.addEventListener('click',()=>setPanel('bubble'));
+el.bubble.addEventListener('click',()=>setPanel('open'));
+el.hide.addEventListener('click',()=>setPanel('hidden'));
+el.showPanel.addEventListener('click',()=>setPanel('open'));
+
+/* ---------- saklar & pengaturan ---------- */
+el.toggle.checked=store.get('ja_on')==='1';
+el.toggle.addEventListener('change',()=>{store.set('ja_on',el.toggle.checked?'1':'0');render();});
+el.key.value=store.get('ja_key')||'';
+el.link.value=store.get('ja_link')||'';
+function fillModels(ids,keep){
+  el.model.textContent='';
+  ids.forEach(id=>{const o=document.createElement('option');o.value=id;o.textContent=id;el.model.appendChild(o);});
+  const want=keep||store.get('ja_model');
+  if(want&&ids.includes(want))el.model.value=want;
+}
+fillModels(PREFER);
+el.model.addEventListener('change',()=>store.set('ja_model',el.model.value));
+async function loadModels(){
+  const k=el.key.value.trim();
+  if(k.length<20)return;
+  try{
+    const r=await fetch(API+'/models',{headers:{Authorization:'Bearer '+k}});
+    if(r.status===401){setMsg(el.setupMsg,'bad','API key Groq salah (401). Periksa kembali.');return;}
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const j=await r.json();
+    const ids=sortModels((j.data||[]).map(m=>m.id));
+    if(ids.length){fillModels(ids,el.model.value);setMsg(el.setupMsg,'', '');}
+  }catch(e){setMsg(el.setupMsg,'warn','Daftar model tidak bisa dimuat, memakai daftar cadangan.');}
+}
+el.key.addEventListener('change',()=>{store.set('ja_key',el.key.value.trim());loadModels();});
+function checkLink(){
+  const p=parseLink(el.link.value);
+  el.connect.disabled=!p.ok;
+  if(el.link.value.trim()&&p.edit)setMsg(el.setupMsg,'warn','Ini link edit. Pakai link responden (berakhiran /viewform) dari tombol Kirim > Link di Google Form.');
+  else if(el.setupMsg.classList.contains('warn')&&el.setupMsg.textContent.startsWith('Ini link edit'))setMsg(el.setupMsg,'','');
+}
+el.link.addEventListener('input',checkLink);
+el.link.addEventListener('change',()=>store.set('ja_link',el.link.value.trim()));
+
+/* ---------- membaca soal ---------- */
+async function fetchT(url,ms){
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);
+  try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text();}
+  finally{clearTimeout(t);}
+}
+async function loadFormHtml(target,onTry){
+  const enc=encodeURIComponent(target),tries=[];
+  if(/^https?:$/.test(location.protocol))tries.push('/.netlify/functions/form?url='+enc);
+  tries.push('https://api.allorigins.win/raw?url='+enc,'https://corsproxy.io/?url='+enc,'https://api.codetabs.com/v1/proxy/?quest='+enc,'https://thingproxy.freeboard.io/fetch/'+target);
+  for(let i=0;i<tries.length;i++){
+    onTry(i+1,tries.length);
+    try{const h=await fetchT(tries[i],12000);if(h&&h.includes('FB_PUBLIC_LOAD_DATA_'))return h;}catch(e){}
   }
-  throw new Error('Groq gagal: ' + lastMsg);
-}
-
-function norm(s) { return String(s).trim().toLowerCase().replace(/\s+/g, ' '); }
-function matchOption(ans, options) {
-  var a = norm(ans), i;
-  for (i = 0; i < options.length; i++) if (norm(options[i]) === a) return options[i];
-  for (i = 0; i < options.length; i++) if (a && (a.indexOf(norm(options[i])) >= 0 || norm(options[i]).indexOf(a) >= 0)) return options[i];
   return null;
 }
-
-function systemPrompt(careful) {
-  return 'Kamu pakar lintas bidang (matematika, sains, bahasa, hukum, pemrograman, sejarah, geografi, ekonomi, dan lainnya) yang menjawab soal dengan sangat teliti, dalam bahasa Indonesia. ' +
-    'Balas HANYA dengan JSON. Untuk setiap soal tulis dulu "analisis" (' +
-    (careful ? 'langkah demi langkah, hitung dan periksa ulang hasilnya, bandingkan setiap opsi sebelum memilih' : 'satu atau dua kalimat') +
-    '), baru "jawab". Untuk soal pilihan (pilihan ganda, dropdown, skala), "jawab" harus sama persis dengan salah satu opsi. ' +
-    'Untuk kotak centang, "jawab" berupa daftar opsi yang benar. Untuk isian, tulis jawaban akhir yang singkat dan benar. ' +
-    'Jika soal berupa selera atau data pribadi yang tidak bisa diketahui, pilih jawaban paling masuk akal dan sebutkan itu di "alasan". ' +
-    'Jika soal merujuk gambar atau lampiran yang tidak terlihat, jawab perkiraan terbaik dan sebutkan keterbatasannya di "alasan". ' +
-    '"alasan" berisi satu kalimat ringkas.';
-}
-
-function describe(q, no) {
-  var line = no + '. ' + q.title + ' [' + q.type + ']';
-  if (q.description) line += '\n   Keterangan: ' + q.description;
-  if (q.options.length) line += '\n   Opsi: ' + q.options.map(function (o) { return '"' + o + '"'; }).join(' | ');
-  return line;
-}
-
-async function askChunk(key, model, qs, offset, careful) {
-  var listing = qs.map(function (q, i) { return describe(q, offset + i + 1); }).join('\n');
-  var out = await askGroq(key, model, systemPrompt(careful),
-    'Jawab semua soal berikut. Pakai nomor yang sama.\nFormat: {"jawaban":[{"no":1,"analisis":"...","jawab":"...","alasan":"..."}]}\n\n' + listing);
-  var byNo = {};
-  (out.jawaban || []).forEach(function (a) { byNo[a.no] = a; });
-  return byNo;
-}
-
-function resolveAnswer(q, a) {
-  if (!a) return { warn: 'AI tidak memberi jawaban untuk soal ini.' };
-  if (q.options.length) {
-    var raw = [].concat(a.jawab);
-    var fixed = raw.map(function (x) { return matchOption(x, q.options); }).filter(Boolean);
-    if (!fixed.length) return { warn: 'Jawaban AI tidak cocok dengan opsi: ' + raw.join(', ') };
-    return { answer: q.typeCode === 4 ? fixed : fixed[0], reason: a.alasan || '' };
+async function readQuestions(target,idIn,onTry){
+  let id=idIn,note='',qs=[],title='Formulir';
+  const html=await loadFormHtml(target,onTry);
+  if(html){
+    if(!id)id=findFormId(html);
+    try{const r=parseFormData(html);qs=r.qs;title=r.title;if(!qs.length)note='Formulir terbaca tetapi tidak ada soal yang bisa dijawab.';}
+    catch(e){note=e.message+' Tekan Baca ulang soal di panel untuk mencoba lagi.';}
+  }else{
+    note='Soal tidak bisa dibaca otomatis (semua proxy gagal). Tekan Baca ulang soal di panel untuk mencoba lagi.';
   }
-  return { answer: [].concat(a.jawab).join(', '), reason: a.alasan || '' };
+  return{id,qs,title,note};
 }
+function autoRun(){
+  if(!el.optAuto.checked||!S.qs.some(q=>q.supported))return;
+  if(!el.key.value.trim()){setMsg(el.status,'warn','Isi API key Groq di pengaturan, lalu tekan tombol jawab.');return;}
+  setTimeout(()=>el.go.click(),400);
+}
+el.connect.addEventListener('click',async()=>{
+  const p=parseLink(el.link.value);
+  if(!p.ok)return;
+  store.set('ja_link',el.link.value.trim());store.set('ja_key',el.key.value.trim());
+  el.connect.disabled=true;
+  try{
+    const target=p.id?'https://docs.google.com/forms/d/e/'+p.id+'/viewform':p.url;
+    const r=await readQuestions(target,p.id,(i,n)=>setMsg(el.setupMsg,'info','Membaca soal formulir (percobaan '+i+' dari '+n+')...'));
+    if(!r.id){setMsg(el.setupMsg,'bad','ID formulir tidak ditemukan. Pastikan memakai link responden yang benar, atau buka link lewat tab baru.');return;}
+    S.id=r.id;S.url='https://docs.google.com/forms/d/e/'+r.id+'/viewform';S.title=r.title;S.qs=r.qs;S.answers=[];S.connected=true;S.panel='open';
+    el.ftitle.textContent=r.title;
+    el.newTab.href=S.url;
+    S.lastReload=Date.now();
+    el.frame.src=S.url+'?embedded=true';
+    setMsg(el.setupMsg,'','');setMsg(el.status,'','');
+    updateCount(r.note);renderResults();render();
+    if(!r.note)autoRun();
+  }catch(e){
+    setMsg(el.setupMsg,'bad','Terjadi kesalahan: '+(e&&e.message?e.message:e));
+  }finally{checkLink();}
+});
+el.reread.addEventListener('click',async()=>{
+  if(S.busy||!S.url)return;
+  el.reread.disabled=true;
+  try{
+    const r=await readQuestions(S.url,S.id,(i,n)=>setMsg(el.status,'info','Membaca ulang soal (percobaan '+i+' dari '+n+')...'));
+    S.qs=r.qs;S.answers=[];renderResults();
+    if(r.note){updateCount(r.note);}
+    else{setMsg(el.status,'','');updateCount();autoRun();}
+  }finally{el.reread.disabled=false;}
+});
+el.change.addEventListener('click',()=>{S.connected=false;el.frame.src='about:blank';render();checkLink();});
 
-async function answerForm(key, model, form, careful, progress) {
-  var qs = form.questions.filter(function (q) { return q.supported; });
-  var byNo = {};
-  for (var i = 0; i < qs.length; i += CHUNK) {
-    progress('AI menjawab soal ' + (i + 1) + '-' + Math.min(i + CHUNK, qs.length) + ' dari ' + qs.length + '...');
-    Object.assign(byNo, await askChunk(key, model, qs.slice(i, i + CHUNK), i, careful));
-  }
-  var n = 0;
-  var items = [];
-  for (var k = 0; k < form.questions.length; k++) {
-    var q = form.questions[k];
-    var item = { title: q.title, entry: q.entry, answer: null, reason: '', warn: '' };
-    if (!q.supported) { item.warn = 'Tipe soal belum didukung. Isi sendiri di formulir.'; items.push(item); continue; }
-    n += 1;
-    var res = resolveAnswer(q, byNo[n]);
-    if (!res.answer) {
-      // coba sekali lagi khusus soal ini
-      progress('Memeriksa ulang soal ' + n + '...');
-      try {
-        var again = await askChunk(key, model, [q], n - 1, careful);
-        res = resolveAnswer(q, again[n]);
-      } catch (e) { /* biarkan peringatan awal */ }
+/* ---------- AI Groq ---------- */
+function sysPrompt(careful){
+  return 'Kamu pakar lintas bidang (sains, matematika, bahasa, sosial, teknologi, hukum, kesehatan, dan lain-lain) yang menjawab soal formulir dengan akurat. '+
+  'Balas HANYA dengan JSON valid tanpa teks lain, bentuk: {"jawaban":[{"no":1,"analisis":"...","jawab":"...","alasan":"..."}]}. '+
+  'Tulis "analisis" SEBELUM "jawab". '+(careful?'Pada "analisis" uraikan penalaran langkah demi langkah, periksa tiap opsi dan hitungan dua kali. ':'Pada "analisis" cukup ringkas. ')+
+  'Untuk soal pilihan ganda, dropdown, dan skala, "jawab" harus sama persis dengan salah satu opsi yang diberikan. '+
+  'Untuk kotak centang, "jawab" berupa daftar (array) opsi yang sama persis dengan opsi. '+
+  'Untuk tanggal, "jawab" berformat YYYY-MM-DD; untuk jam, HH:MM (24 jam). Untuk jawaban singkat dan paragraf, "jawab" berupa teks. "alasan" berisi penjelasan singkat dalam bahasa Indonesia. '+
+  'Jika soal merujuk gambar yang tidak terlihat, beri perkiraan terbaik dan sebutkan keterbatasan itu di "alasan". Jawab dalam bahasa soal.';
+}
+async function groq(messages){
+  const key=el.key.value.trim(),model=el.model.value;
+  const base={model,messages,temperature:0,max_completion_tokens:8000};
+  const full=Object.assign({},base,{response_format:{type:'json_object'}});
+  if(/gpt-oss/i.test(model))full.reasoning_effort='high';
+  if(/qwen3/i.test(model))full.reasoning_format='hidden';
+  const plain=Object.assign({},base,{response_format:{type:'json_object'}});
+  const bare=Object.assign({},base);
+  for(const body of [full,plain,bare]){
+    for(let n=0;n<=3;n++){
+      let r;
+      try{r=await fetch(API+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify(body)});}
+      catch(e){throw new Error('Tidak bisa menghubungi Groq. Periksa koneksi internet.');}
+      if(r.status===401){const e=new Error('API key Groq salah atau ditolak (401).');e.fatal=true;throw e;}
+      if(r.status===429){
+        if(n===3){const e=new Error('Batas pemakaian Groq tercapai (429). Tunggu sebentar lalu coba lagi.');e.fatal=true;throw e;}
+        const w=Number(r.headers.get('retry-after'))||(4*(n+1));
+        setMsg(el.status,'warn','Batas laju Groq, menunggu '+Math.min(w,30)+' detik...');
+        await new Promise(res=>setTimeout(res,Math.min(w,30)*1000));
+        continue;
+      }
+      if(r.status===400)break;
+      if(!r.ok)throw new Error('Groq membalas error HTTP '+r.status+'.');
+      const j=await r.json();
+      return (j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'';
     }
-    item.answer = res.answer || null; item.reason = res.reason || ''; item.warn = res.answer ? '' : res.warn;
-    items.push(item);
   }
-  return items;
+  throw new Error('Groq menolak permintaan (400). Coba pilih model lain.');
 }
-
-async function answerText(key, model, text, careful) {
-  var out = await askGroq(key, model, systemPrompt(careful),
-    'Pisahkan dan jawab setiap soal pada teks berikut.\nFormat: {"jawaban":[{"soal":"...","analisis":"...","jawab":"...","alasan":"..."}]}\n\n' + text);
-  return (out.jawaban || []).map(function (a) {
-    return { title: a.soal || '', entry: null, answer: [].concat(a.jawab).join(', '), reason: a.alasan || '', warn: '' };
+async function askAI(indices,hint){
+  const payload=indices.map(i=>{
+    const q=S.qs[i];
+    return{no:i+1,soal:q.title,deskripsi:q.desc||undefined,tipe:TYPE_NAME[q.type]||'teks',opsi:q.options.length?q.options:undefined};
   });
+  let user='Jawab soal berikut:\n'+JSON.stringify(payload);
+  if(hint)user+='\nPENTING: "jawab" harus sama persis dengan salah satu opsi yang tertera.';
+  const text=await groq([{role:'system',content:sysPrompt(el.optCareful.checked)},{role:'user',content:user}]);
+  const j=extractJson(text);
+  const list=Array.isArray(j.jawaban)?j.jawaban:(Array.isArray(j)?j:[]);
+  return list;
 }
-
-/* ---------------- mengisi formulir lewat link prefill ---------------- */
-function embedUrl(id) { return 'https://docs.google.com/forms/d/e/' + id + '/viewform?embedded=true'; }
-function prefillUrl(id, items) {
-  var p = ['embedded=true', 'usp=pp_url'];
-  items.forEach(function (it) {
-    if (!it.entry || !it.answer) return;
-    [].concat(it.answer).forEach(function (v) { p.push('entry.' + it.entry + '=' + encodeURIComponent(v)); });
-  });
-  return 'https://docs.google.com/forms/d/e/' + id + '/viewform?' + p.join('&');
-}
-
-/* ---------------- panel melayang: open / bubble / hidden / none ---------------- */
-function setPanel(mode) {
-  S.panel = mode;
-  $('panel').hidden = mode !== 'open';
-  $('bubble').hidden = mode !== 'bubble';
-  $('showpanel').hidden = mode !== 'hidden';
-}
-$('bubble').addEventListener('click', function () { setPanel('open'); });
-$('close').addEventListener('click', function () { setPanel('bubble'); });
-$('hide').addEventListener('click', function () { setPanel('hidden'); });
-$('showpanel').addEventListener('click', function () { setPanel('open'); });
-
-// tekan di mana saja di luar panel: panel menutup jadi gelembung
-document.addEventListener('pointerdown', function (e) {
-  if (S.panel !== 'open') return;
-  if ($('panel').contains(e.target) || e.target === $('bubble')) return;
-  setPanel('bubble');
-});
-// tekan di dalam formulir (iframe) memindahkan fokus dan tidak terkirim ke halaman ini
-window.addEventListener('blur', function () {
-  setTimeout(function () {
-    if (S.panel === 'open' && document.activeElement === $('frame')) setPanel('bubble');
-  }, 0);
-});
-document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && S.panel === 'open') setPanel('bubble'); });
-
-// geser panel
-(function () {
-  var panel = $('panel'), head = $('drag'), dragging = false, dx = 0, dy = 0;
-  head.addEventListener('pointerdown', function (e) {
-    if (e.target.tagName === 'BUTTON') return;
-    var r = panel.getBoundingClientRect();
-    dragging = true; dx = e.clientX - r.left; dy = e.clientY - r.top;
-    panel.style.right = 'auto'; panel.style.bottom = 'auto';
-    panel.style.left = r.left + 'px'; panel.style.top = r.top + 'px';
-    try { head.setPointerCapture(e.pointerId); } catch (x) {}
-  });
-  head.addEventListener('pointermove', function (e) {
-    if (!dragging) return;
-    panel.style.left = Math.max(0, Math.min(window.innerWidth - 80, e.clientX - dx)) + 'px';
-    panel.style.top = Math.max(0, Math.min(window.innerHeight - 44, e.clientY - dy)) + 'px';
-  });
-  head.addEventListener('pointerup', function () { dragging = false; });
-})();
-
-/* ---------------- saklar dan penghubung ---------------- */
-function isFormUrl(u) { return /^https:\/\/(docs\.google\.com\/forms\/|forms\.gle\/|forms\.google\.com\/)\S+/i.test(u); }
-
-function disconnect() {
-  $('stage').hidden = true;
-  $('frame').src = 'about:blank';
-  S.form = null; S.id = null; S.items = [];
-  $('res').innerHTML = ''; $('copy').hidden = true;
-  setStatus('status', '');
-  setStatus('pstatus', '');
-  setPanel('none');
-}
-
-function applyOn() {
-  var on = $('on').checked;
-  $('setup').hidden = !on;
-  $('onlabel').textContent = on ? 'Hidup' : 'Mati';
-  if (!on) disconnect();
-}
-
-$('on').addEventListener('change', function () { store('on', $('on').checked ? '1' : '0'); applyOn(); });
-$('url').addEventListener('input', function () { $('connect').disabled = !isFormUrl($('url').value.trim()); });
-
-$('connect').addEventListener('click', async function () {
-  var url = $('url').value.trim();
-  if (!isFormUrl(url)) return setStatus('status', 'Link harus dari Google Form.', 'err');
-  if (/\/forms\/d\/(?!e\/)[\w-]+\/(edit|viewform)/.test(url) && !/\/forms\/d\/e\//.test(url)) {
-    return setStatus('status', 'Ini link edit. Pakai link responden: di Google Form klik Kirim, lalu ikon link.', 'err');
-  }
-  store('url', url); store('key', $('key').value.trim()); store('model', $('model').value);
-  var btn = $('connect');
-  btn.disabled = true;
-  setStatus('status', 'Menghubungkan ke formulir...');
-  S.items = []; $('res').innerHTML = ''; $('copy').hidden = true; setStatus('pstatus', '');
-  var id = (url.match(/\/forms\/d\/e\/([\w-]+)/) || [])[1] || null;
-  var form = null, readErr = '';
-  try {
-    form = await getForm(url);
-    if (!id && form.action) id = (form.action.match(/\/forms\/d\/e\/([\w-]+)/) || [])[1] || null;
-  } catch (e) { readErr = e.message; }
-  S.form = form;
-  S.id = id;
-  btn.disabled = false;
-  if (!id) return setStatus('status', readErr || 'ID formulir tidak ditemukan. Coba link responden langsung dari tombol Kirim.', 'err');
-
-  $('formname').textContent = form ? form.title : 'Formulir';
-  $('frame').src = embedUrl(id);
-  $('stage').hidden = false;
-  $('count').textContent = form && form.questions.length
-    ? 'Terbaca ' + form.questions.length + ' soal di formulir ini.'
-    : 'Soal belum terbaca. Tempel soal manual di bawah.';
-  if (form) setStatus('status', 'Terhubung. Formulir terbuka di bawah dan panel melayang aktif.', 'good');
-  else setStatus('status', 'Formulir terbuka, tetapi soal belum terbaca: ' + readErr, 'warn');
-  setPanel('open');
-  $('stage').scrollIntoView({ behavior: 'smooth', block: 'start' });
-});
-
-$('newtab').addEventListener('click', function () {
-  var url = S.id ? 'https://docs.google.com/forms/d/e/' + S.id + '/viewform' : $('url').value.trim();
-  window.open(url, '_blank', 'noopener');
-});
-
-/* ---------------- menjawab ---------------- */
-function render() {
-  var res = $('res');
-  res.innerHTML = '';
-  S.items.forEach(function (it, i) {
-    var box = document.createElement('div'); box.className = 'r';
-    var h = document.createElement('b'); h.textContent = (i + 1) + '. ' + it.title; box.appendChild(h);
-    if (it.answer) { var a = document.createElement('div'); a.className = 'a'; a.textContent = [].concat(it.answer).join(', '); box.appendChild(a); }
-    if (it.warn) { var w = document.createElement('div'); w.className = 'w'; w.textContent = it.warn; box.appendChild(w); }
-    if (it.reason) { var y = document.createElement('div'); y.className = 'why'; y.textContent = it.reason; box.appendChild(y); }
-    res.appendChild(box);
-  });
-  $('copy').hidden = !S.items.length;
-}
-
-$('go').addEventListener('click', async function () {
-  var key = $('key').value.trim();
-  var model = $('model').value || 'llama-3.3-70b-versatile';
-  var careful = $('careful').checked;
-  var text = $('text').value.trim();
-  if (!key) return setStatus('pstatus', 'Isi API key Groq di halaman utama dulu.', 'err');
-  if (!text && !(S.form && S.form.questions.length)) return setStatus('pstatus', 'Soal belum terbaca. Tempel soal manual di bawah.', 'err');
-  var btn = $('go');
-  btn.disabled = true;
-  $('res').innerHTML = ''; $('copy').hidden = true;
-  try {
-    if (text) {
-      setStatus('pstatus', 'AI sedang menjawab soal...');
-      S.items = await answerText(key, model, text, careful);
-    } else {
-      S.items = await answerForm(key, model, S.form, careful, function (m) { setStatus('pstatus', m); });
+el.go.addEventListener('click',async()=>{
+  if(S.busy)return;
+  if(!el.key.value.trim()){setMsg(el.status,'bad','Isi API key Groq dulu di bagian pengaturan.');return;}
+  if(!S.qs.length){setMsg(el.status,'bad','Belum ada soal terbaca. Tekan Baca ulang soal.');return;}
+  S.busy=true;el.go.disabled=true;S.answers=[];renderResults();
+  try{
+    const idx=S.qs.map((q,i)=>i).filter(i=>S.qs[i].supported);
+    if(!idx.length)throw new Error('Tidak ada soal yang didukung.');
+    for(let s=0;s<idx.length;s+=8){
+      const batch=idx.slice(s,s+8);
+      setMsg(el.status,'info','Memproses soal '+(s+1)+' sampai '+(s+batch.length)+' dari '+idx.length+'...');
+      const list=await askAI(batch,false);
+      for(const i of batch){
+        const q=S.qs[i];
+        let item=list.find(x=>Number(x&&x.no)===i+1);
+        let val=item?resolveAnswer(q,item.jawab):null;
+        if(val==null){
+          setMsg(el.status,'info','Mengulang soal '+(i+1)+' sendirian...');
+          try{
+            const one=await askAI([i],true);
+            item=one.find(x=>Number(x&&x.no)===i+1)||one[0]||item;
+            val=item?resolveAnswer(q,item.jawab):null;
+          }catch(e){if(e.fatal)throw e;}
+        }
+        if(val==null){
+          const raw=item&&item.jawab!=null?(Array.isArray(item.jawab)?item.jawab.join(', '):String(item.jawab)):'(kosong)';
+          S.answers[i]={warn:true,raw,alasan:item&&item.alasan?String(item.alasan):''};
+        }else{
+          S.answers[i]={value:val,alasan:item&&item.alasan?String(item.alasan):''};
+        }
+      }
+      renderResults();
     }
-    render();
-    var fillable = !text && S.id && $('fill').checked && S.items.some(function (it) { return it.entry && it.answer; });
-    if (fillable) {
-      $('frame').src = prefillUrl(S.id, S.items);
-      setStatus('pstatus', 'Selesai. Jawaban sudah terisi di formulir. Periksa lalu tekan Kirim di formulir.', 'good');
-    } else {
-      setStatus('pstatus', 'Selesai. ' + S.items.length + ' soal dijawab.', 'good');
+    const warns=S.answers.filter(a=>a&&a.warn).length;
+    const got=S.answers.some(a=>a&&a.value!=null);
+    let done='Selesai.';
+    if(el.optFill.checked&&S.id&&got&&S.qs.some(q=>q.entry!=null)){
+      S.lastReload=Date.now();
+      el.frame.src=buildPrefill(S.id,S.qs,S.answers);
+      done+=' Jawaban sudah diisi ke formulir. Periksa dulu, lalu tekan Kirim sendiri.';
     }
-  } catch (e) {
-    setStatus('pstatus', e.message, 'err');
-  } finally {
-    btn.disabled = false;
+    setMsg(el.status,warns?'warn':'ok',done+(warns?(' '+warns+' soal tidak cocok dengan opsi, periksa sendiri.'):''));
+  }catch(e){
+    setMsg(el.status,'bad',e&&e.message?e.message:'Terjadi kesalahan tak dikenal.');
+  }finally{S.busy=false;el.go.disabled=false;}
+});
+
+/* ---------- salin ---------- */
+el.copy.addEventListener('click',async()=>{
+  const text=S.qs.map((q,i)=>{
+    const a=S.answers[i];if(!a||a.value==null)return null;
+    return (i+1)+'. '+q.title+'\nJawab: '+(Array.isArray(a.value)?a.value.join(', '):a.value);
+  }).filter(Boolean).join('\n\n');
+  try{await navigator.clipboard.writeText(text);setMsg(el.status,'ok','Jawaban disalin.');}
+  catch(e){
+    const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();
+    try{document.execCommand('copy');setMsg(el.status,'ok','Jawaban disalin.');}catch(_){setMsg(el.status,'bad','Gagal menyalin. Salin manual dari daftar.');}
+    t.remove();
   }
 });
 
-$('copy').addEventListener('click', function () {
-  var txt = S.items.map(function (it, i) { return (i + 1) + '. ' + [].concat(it.answer || '(kosong)').join(', '); }).join('\n');
-  var b = $('copy');
-  function done(m) { b.textContent = m; setTimeout(function () { b.textContent = 'Salin jawaban'; }, 1800); }
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(txt).then(function () { done('Tersalin'); }, function () { done('Gagal menyalin'); });
-  } else { done('Gagal menyalin'); }
-});
-
-/* ---------------- awal ---------------- */
-$('url').value = load('url');
-$('key').value = load('key');
-loadModels($('key').value.trim());
-$('key').addEventListener('change', function () { store('key', $('key').value.trim()); loadModels($('key').value.trim()); });
-$('model').addEventListener('change', function () { store('model', $('model').value); });
-$('connect').disabled = !isFormUrl($('url').value.trim());
-$('on').checked = load('on') === '1';
-applyOn();
+checkLink();render();
+if(el.key.value.trim())loadModels();
 </script>
 </body>
 </html>
